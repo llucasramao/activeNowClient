@@ -13,7 +13,7 @@ import (
 )
 
 const version = "0.3.5"
-const manager = "http://localhost:7654"
+const manager = "http://192.168.1.14:7654"
 
 func main() {
 	if runtime.GOOS == "linux" {
