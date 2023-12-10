@@ -1,6 +1,7 @@
 package main
 
 import (
+	"activeNow/functions"
 	logger "activeNow/log"
 	"encoding/json"
 	"fmt"
@@ -47,7 +48,7 @@ func listen() {
 
 func Init() {
 	if isUpdate() {
-		//functions.Finder()
+		functions.Finder()
 		fmt.Println(1)
 	} else {
 		time.Sleep(time.Second * 3)
