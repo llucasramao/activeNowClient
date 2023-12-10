@@ -19,7 +19,7 @@ const version = "0.3.5"
 const manager = "http://192.168.1.14:7654"
 
 func main() {
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS != "linux" {
 		Cron("5s")
 		listen()
 	} else {
@@ -48,8 +48,7 @@ func listen() {
 
 func Init() {
 	if isUpdate() {
-		functions.Finder()
-		fmt.Println(1)
+		functions.GetCommands()
 	} else {
 		time.Sleep(time.Second * 3)
 		logger.Log("Tentando auto atualizar", false)
