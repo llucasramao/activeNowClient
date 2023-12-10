@@ -1,9 +1,9 @@
 package main
 
 import (
+	"activeNow/functions"
 	logger "activeNow/log"
-	"fmt"
-	"io/ioutil"
+	"encoding/json"
 	"net/http"
 	"runtime"
 	"strings"
@@ -13,10 +13,10 @@ import (
 )
 
 const version = "0.3.5"
+const manager = "http://localhost:7654"
 
 func main() {
 	if runtime.GOOS != "linux" {
-		logger.Log("OK", false)
 		Cron("5s")
 		//listen()
 	} else {
@@ -36,26 +36,35 @@ func Cron(sched string) {
 }
 
 func Init() {
-	fmt.Println(1)
 	if isUpdate() {
-		fmt.Println(2)
-		//finder()
+		functions.Finder()
 	} else {
-		fmt.Println(3)
 		time.Sleep(time.Second * 3)
 		logger.Log("Tentando auto atualizar", false)
 		//autoUpdate()
 	}
 }
 
+type VersionInfo struct {
+	Version string `json:"version"`
+}
+
 func isUpdate() bool {
-	resp, err := http.Get("http://192.168.1.31/lastVersion")
+	resp, err := http.Get(manager + "/version")
 	if err != nil {
 		logger.Log(err.Error(), true)
+		return false
 	}
 	defer resp.Body.Close()
-	content, _ := ioutil.ReadAll(resp.Body)
-	lastVersion := strings.TrimSpace(string(content))
+
+	var versionInfo VersionInfo
+	err = json.NewDecoder(resp.Body).Decode(&versionInfo)
+	if err != nil {
+		logger.Log(err.Error(), true)
+		return false
+	}
+
+	lastVersion := strings.TrimSpace(versionInfo.Version)
 
 	if lastVersion == version {
 		return true

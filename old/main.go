@@ -254,5 +254,4 @@ func postRequest(url string, requestBody Body) {
 		Log("Dados enviados a API", false)
 		return
 	}
-
 }
