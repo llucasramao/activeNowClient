@@ -16,7 +16,7 @@ const version = "0.3.5"
 const manager = "http://localhost:7654"
 
 func main() {
-	if runtime.GOOS != "linux" {
+	if runtime.GOOS == "linux" {
 		Cron("5s")
 		//listen()
 	} else {
