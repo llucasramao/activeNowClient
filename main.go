@@ -3,10 +3,12 @@ package main
 import (
 	"activeNow/functions"
 	logger "activeNow/log"
+	"activeNow/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"runtime"
 	"strings"
@@ -39,7 +41,6 @@ func Cron(sched string) {
 }
 
 func listen() {
-	// Função cirada para manter o cron ininterrupto
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt, os.Kill)
 	<-sig
@@ -53,12 +54,19 @@ func Init() {
 	} else {
 		time.Sleep(time.Second * 3)
 		logger.Log("Tentando auto atualizar", false)
-		//autoUpdate()
+		autoUpdate()
 	}
 }
 
-type VersionInfo struct {
-	Version string `json:"version"`
+func autoUpdate() {
+	cmd := exec.Command("bash", "-c", "curl -fsSL "+manager+"/linuxClient | sudo sh")
+	output, err := cmd.Output()
+	if err != nil {
+		logger.Log(err.Error(), true)
+		return
+	}
+	outputStr := string(output)
+	fmt.Println(outputStr)
 }
 
 func isUpdate() bool {
@@ -69,7 +77,7 @@ func isUpdate() bool {
 	}
 	defer resp.Body.Close()
 
-	var versionInfo VersionInfo
+	var versionInfo models.VersionInfo
 	err = json.NewDecoder(resp.Body).Decode(&versionInfo)
 	if err != nil {
 		logger.Log(err.Error(), true)

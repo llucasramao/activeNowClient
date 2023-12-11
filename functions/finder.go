@@ -99,7 +99,7 @@ func findHostname() string {
 
 func findOS() string {
 	logger.Log("Funcao de buscar OS em manutencao", false)
-	return "nil"
+	return "linux"
 }
 
 func findPorts() []models.Port {

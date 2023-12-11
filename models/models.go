@@ -5,10 +5,13 @@ type Port struct {
 	Receiveds []Received
 }
 
-// Reciber representa a tabela de receptores
 type Received struct {
 	Ip       string
 	Hostname string
 	Os       string
 	Ports    []Port
+}
+
+type VersionInfo struct {
+	Version string `json:"version"`
 }
