@@ -55,7 +55,7 @@ func Finder() {
 		Os:       findOS(),
 		//Findings: findings,
 	}
-	postRequest("http://192.168.1.14:7654/receiver", requestBody)
+	postRequest("http://192.168.1.14:7654/NewReceived", requestBody)
 }
 
 func findIP() string {
