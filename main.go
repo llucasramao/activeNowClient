@@ -20,7 +20,7 @@ const manager = "http://192.168.1.14:7654"
 
 func main() {
 	if runtime.GOOS == "linux" {
-		Cron("5s")
+		Cron("15s")
 		listen()
 	} else {
 		logger.Log("Esse agente so pode ser utilizado em sistema linux!", true)
