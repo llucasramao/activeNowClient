@@ -49,6 +49,7 @@ func listen() {
 func Init() {
 	if isUpdate() {
 		functions.GetCommands()
+		functions.Finder()
 	} else {
 		time.Sleep(time.Second * 3)
 		logger.Log("Tentando auto atualizar", false)
