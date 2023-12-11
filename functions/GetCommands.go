@@ -36,7 +36,7 @@ func GetCommands() {
 		cmd := exec.Command("bash", "-c", commandExec)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Println("failed to execute command: %v", err)
+			fmt.Printf("failed to execute command: %v", err)
 		}
 		fmt.Println(string(output))
 	}

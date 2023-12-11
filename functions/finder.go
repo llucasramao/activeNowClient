@@ -2,6 +2,7 @@ package functions
 
 import (
 	logger "activeNow/log"
+	"activeNow/models"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -43,15 +44,16 @@ func Finder() {
 			}
 
 			findings = append(findings, newObject)
+			fmt.Println(findings)
 		}
 	}
 
-	requestBody := Body{
+	requestBody := models.Received{
 		Ip:       findIP(),
 		Ports:    findPorts(),
 		Hostname: findHostname(),
 		Os:       findOS(),
-		Findings: findings,
+		//Findings: findings,
 	}
 	postRequest("http://192.168.1.14:7654/receiver", requestBody)
 }
@@ -79,7 +81,6 @@ func findIP() string {
 		}
 		if ip.To4() != nil {
 			return ip.String()
-			break
 		}
 	}
 	return "ok"
@@ -101,39 +102,22 @@ func findOS() string {
 	return "nil"
 }
 
-func findPorts() []int {
-	var openPorts []int
+func findPorts() []models.Port {
+	var openPorts []models.Port
 	for port := 1; port <= 1024; port++ {
 		address := fmt.Sprintf("localhost:%d", port)
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
 			continue
 		} else {
-			openPorts = append(openPorts, port)
+			openPorts = append(openPorts, models.Port{Port: int(port)})
 			conn.Close()
 		}
 	}
 	return openPorts
 }
 
-type Body struct {
-	Ip       string              `json:"ip"`
-	Hostname string              `json:"hostname"`
-	Os       string              `json:"os"`
-	Ports    []int               `json:"ports"`
-	Findings []map[string]string `json:"findings"`
-}
-
-func postRequest(url string, requestBody Body) {
-	//const url = "https://webhook.site/36cc7ae1-ddca-4fcb-bb75-896b43540fb0"
-
-	// requestBody := []map[string]string{
-	// 	{
-	// 		"teste":  "teste",
-	// 		"teste2": "teste2",
-	// 	},
-	// }
-
+func postRequest(url string, requestBody models.Received) {
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
 		logger.Log(err.Error(), true)
