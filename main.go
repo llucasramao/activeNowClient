@@ -17,12 +17,12 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-const version = "0.3.8-15s"
+const version = "0.3.8-5m"
 const manager = "http://192.168.1.14:7654"
 
 func main() {
 	if runtime.GOOS == "linux" {
-		Cron("15s")
+		Cron("5m")
 		listen()
 	} else {
 		logger.Log("Esse agente so pode ser utilizado em sistema linux!", true)
