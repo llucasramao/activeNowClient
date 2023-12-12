@@ -46,8 +46,8 @@ func Finder() {
 	fmt.Println(findings)
 
 	requestBody := models.Received{
-		Ip: findIP(),
-		//Ports:    findPorts(),
+		Ip:       findIP(),
+		Ports:    findPorts(),
 		Hostname: findHostname(),
 		Os:       findOS(),
 		Apps:     findings,
