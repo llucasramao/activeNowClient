@@ -104,7 +104,7 @@ func findOS() string {
 
 func findPorts() []models.Port {
 	var openPorts []models.Port
-	for port := 1; port <= 1024; port++ {
+	for port := 1; port <= 65500; port++ {
 		address := fmt.Sprintf("localhost:%d", port)
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
