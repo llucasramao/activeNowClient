@@ -17,7 +17,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-const version = "0.3.6"
+const version = "0.3.6-test"
 const manager = "http://192.168.1.14:7654"
 
 func main() {
