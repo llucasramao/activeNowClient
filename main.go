@@ -1,6 +1,7 @@
 package main
 
 import (
+	"activeNow/config"
 	"activeNow/functions"
 	logger "activeNow/log"
 	"activeNow/models"
@@ -17,9 +18,6 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-const version = "0.3.8-15s-test.1"
-const manager = "http://192.168.1.14:7654"
-
 func main() {
 	if runtime.GOOS == "linux" {
 		Cron("15s")
@@ -31,7 +29,7 @@ func main() {
 }
 
 func Cron(sched string) {
-	logger.Log("Iniciando agente activeNow "+version+" - "+sched+"\n\n", false)
+	logger.Log("Iniciando agente activeNow "+config.AgentVersion+" - "+sched+"\n\n", false)
 	c := cron.New()
 	id, _ := c.AddFunc("@every "+sched, func() {
 		Init()
@@ -59,7 +57,7 @@ func Init() {
 }
 
 func autoUpdate() {
-	cmd := exec.Command("bash", "-c", "curl -fsSL "+manager+"/linuxClient | sudo sh")
+	cmd := exec.Command("bash", "-c", "curl -fsSL "+config.Manager+"/linuxClient | sudo sh")
 	output, err := cmd.Output()
 	if err != nil {
 		logger.Log(err.Error(), true)
@@ -70,7 +68,7 @@ func autoUpdate() {
 }
 
 func isUpdate() bool {
-	resp, err := http.Get(manager + "/version")
+	resp, err := http.Get(config.Manager + "/version")
 	if err != nil {
 		logger.Log(err.Error(), true)
 		return false
@@ -86,10 +84,10 @@ func isUpdate() bool {
 
 	lastVersion := strings.TrimSpace(versionInfo.Version)
 
-	if lastVersion == version {
+	if lastVersion == config.AgentVersion {
 		return true
 	} else {
-		logger.Log("\n\n\nSoftware não atualizado!\nAtual: "+version+"\nUltima: "+lastVersion+"\n", true)
+		logger.Log("\n\n\nSoftware não atualizado!\nAtual: "+config.AgentVersion+"\nUltima: "+lastVersion+"\n", true)
 		return false
 	}
 }

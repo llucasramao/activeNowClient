@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"activeNow/config"
 	logger "activeNow/log"
 	"activeNow/models"
 	"bytes"
@@ -32,11 +33,12 @@ func Finder() {
 	apps := parseDpkgOutput(string(output))
 
 	requestBody := models.Received{
-		Ip:       findIP(),
-		Ports:    findPorts(),
-		Hostname: findHostname(),
-		Os:       findOS(),
-		Apps:     apps,
+		Ip:           findIP(),
+		Ports:        findPorts(),
+		Hostname:     findHostname(),
+		Os:           findOS(),
+		Apps:         apps,
+		AgentVersion: config.AgentVersion,
 	}
 
 	postRequest(managerURL, requestBody)

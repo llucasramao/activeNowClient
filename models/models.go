@@ -28,9 +28,10 @@ type App struct {
 }
 
 type Received struct {
-	Ip       string
-	Hostname string
-	Os       string
-	Ports    []Port
-	Apps     []App
+	Ip           string
+	Hostname     string
+	Os           string
+	Ports        []Port
+	Apps         []App
+	AgentVersion string
 }
