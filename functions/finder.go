@@ -14,94 +14,55 @@ import (
 	"strings"
 )
 
+// Finder searches for installed software and versions using the 'dpkg -l' command.
 func Finder() {
-	logger.Log("Buscando softwares e versoes instaladas COMMAND: 'dpkg -l'", false)
-	cmd := exec.Command("dpkg", "-l")
+	const dpkgCommand = "dpkg"
+	const dpkgArgs = "-l"
+	const managerURL = "http://192.168.1.14:7654/NewReceived"
+
+	logger.Log("Buscando softwares e versões instaladas COMMAND: 'dpkg -l'", false)
+
+	cmd := exec.Command(dpkgCommand, dpkgArgs)
 	output, err := cmd.Output()
 	if err != nil {
-		logger.Log(err.Error(), true)
+		logger.Log(fmt.Sprintf("Erro ao executar comando: %v", err), true)
 		return
 	}
 
-	outputStr := string(output)
-	lines := strings.Split(outputStr, "\n")
-
-	var findings []models.App
-
-	for _, line := range lines {
-		fields := strings.Fields(line)
-		if len(fields) >= 3 {
-			software := fields[1]
-			version := fields[2]
-
-			if strings.Contains(software, "Err?=(none)") || strings.Contains(software, "Name") {
-				logger.Log("Pulando "+software+":"+version, false)
-				continue
-			}
-
-			findings = append(findings, models.App{Name: software, Version: version})
-		}
-	}
-
-	fmt.Println(findings)
+	apps := parseDpkgOutput(string(output))
 
 	requestBody := models.Received{
 		Ip:       findIP(),
 		Ports:    findPorts(),
 		Hostname: findHostname(),
 		Os:       findOS(),
-		Apps:     findings,
+		Apps:     apps,
 	}
-	postRequest("http://192.168.1.14:7654/NewReceived", requestBody)
+
+	postRequest(managerURL, requestBody)
 }
 
-// func Finder() {
-// 	logger.Log("Buscando softwares e versoes instaladas COMMAND: 'dpkg -l'", false)
-// 	cmd := exec.Command("dpkg", "-l")
-// 	output, err := cmd.Output()
-// 	if err != nil {
-// 		logger.Log(err.Error(), true)
-// 		return
-// 	}
+func parseDpkgOutput(output string) []models.App {
+	var apps []models.App
+	lines := strings.Split(output, "")
 
-// 	outputStr := string(output)
-// 	lines := strings.Split(outputStr, "\n")
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) >= 3 {
+			software, version := fields[1], fields[2]
 
-// 	//findings := []map[string]string{}
-// 	findings := []models.App
+			if strings.Contains(software, "Err?=(none)") || strings.Contains(software, "Name") {
+				continue
+			}
 
-// 	for _, line := range lines {
-// 		fields := strings.Fields(line)
-// 		if len(fields) >= 3 {
-// 			software := fields[1]
-// 			version := fields[2]
-
-// 			if strings.Contains(software, "Err?=(none)") || (strings.Contains(software, "Name")) {
-// 				logger.Log("Pulando "+software+":"+version, false)
-// 				continue
-// 			}
-// 			// newObject := map[string]string{
-// 			// 	"name":    software,
-// 			// 	"version": version,
-// 			// }
-
-// 			findings = append(findings, models.App{Name: software, Version: version})
-// 			fmt.Println(findings)
-// 		}
-// 	}
-
-// 	requestBody := models.Received{
-// 		Ip:       findIP(),
-// 		Ports:    findPorts(),
-// 		Hostname: findHostname(),
-// 		Os:       findOS(),
-// 		Apps:     findings,
-// 	}
-// 	postRequest("http://192.168.1.14:7654/NewReceived", requestBody)
-// }
+			apps = append(apps, models.App{Name: software, Version: version})
+		}
+	}
+	return apps
+}
 
 func findIP() string {
-	logger.Log("Buscando IP eth0 da maquina", false)
+	logger.Log("Buscando IP eth0 da máquina", false)
 	iface, err := net.InterfaceByName("eth0")
 	if err != nil {
 		logger.Log(err.Error(), true)
@@ -114,33 +75,31 @@ func findIP() string {
 		return "nil"
 	}
 
-	// Percorrer os endereços e imprimir o primeiro que for IPv4
 	for _, addr := range addrs {
 		ip, _, err := net.ParseCIDR(addr.String())
 		if err != nil {
 			logger.Log(err.Error(), true)
 			continue
 		}
-		if ip.To4() != nil {
-			return ip.String()
+		if ipv4 := ip.To4(); ipv4 != nil {
+			return ipv4.String()
 		}
 	}
-	return "ok"
+	return "nil"
 }
 
 func findHostname() string {
 	hostname, err := os.Hostname()
 	if err != nil {
-		fmt.Println(err)
 		logger.Log(err.Error(), true)
 		return "nil"
-	} else {
-		return hostname
 	}
+	return hostname
 }
 
 func findOS() string {
-	logger.Log("Funcao de buscar OS em manutencao", false)
+	logger.Log("Função de buscar OS em manutenção", false)
+	// Potentially more logic can be added here for different OS detection
 	return "linux"
 }
 
@@ -151,10 +110,9 @@ func findPorts() []models.Port {
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
 			continue
-		} else {
-			openPorts = append(openPorts, models.Port{Port: int(port)})
-			conn.Close()
 		}
+		openPorts = append(openPorts, models.Port{Port: port})
+		conn.Close()
 	}
 	return openPorts
 }
@@ -162,21 +120,22 @@ func findPorts() []models.Port {
 func postRequest(url string, requestBody models.Received) {
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		logger.Log(err.Error(), true)
+		logger.Log(fmt.Sprintf("Erro ao serializar JSON: %v", err), true)
+		return
 	}
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
-		logger.Log(err.Error(), true)
+		logger.Log(fmt.Sprintf("Erro ao fazer requisição HTTP: %v", err), true)
 		return
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+
+	if resp.StatusCode != http.StatusOK {
 		logger.Log("Erro ao fazer requisição", true)
 		content, _ := ioutil.ReadAll(resp.Body)
 		logger.Log(string(content), true)
 	} else {
-		logger.Log("Dados enviados a API", false)
-		return
+		logger.Log("Dados enviados a API com sucesso", false)
 	}
 }
