@@ -26,7 +26,7 @@ func Finder() {
 	outputStr := string(output)
 	lines := strings.Split(outputStr, "\n")
 
-	findings := []map[string]string{}
+	var findings []models.App
 
 	for _, line := range lines {
 		fields := strings.Fields(line)
@@ -34,29 +34,71 @@ func Finder() {
 			software := fields[1]
 			version := fields[2]
 
-			if strings.Contains(software, "Err?=(none)") || (strings.Contains(software, "Name")) {
+			if strings.Contains(software, "Err?=(none)") || strings.Contains(software, "Name") {
 				logger.Log("Pulando "+software+":"+version, false)
 				continue
 			}
-			newObject := map[string]string{
-				"software": software,
-				"version":  version,
-			}
 
-			findings = append(findings, newObject)
-			fmt.Println(findings)
+			findings = append(findings, models.App{Name: software, Version: version})
 		}
 	}
+
+	fmt.Println(findings)
 
 	requestBody := models.Received{
 		Ip:       findIP(),
 		Ports:    findPorts(),
 		Hostname: findHostname(),
 		Os:       findOS(),
-		//Findings: findings,
+		Apps:     findings,
 	}
 	postRequest("http://192.168.1.14:7654/NewReceived", requestBody)
 }
+
+// func Finder() {
+// 	logger.Log("Buscando softwares e versoes instaladas COMMAND: 'dpkg -l'", false)
+// 	cmd := exec.Command("dpkg", "-l")
+// 	output, err := cmd.Output()
+// 	if err != nil {
+// 		logger.Log(err.Error(), true)
+// 		return
+// 	}
+
+// 	outputStr := string(output)
+// 	lines := strings.Split(outputStr, "\n")
+
+// 	//findings := []map[string]string{}
+// 	findings := []models.App
+
+// 	for _, line := range lines {
+// 		fields := strings.Fields(line)
+// 		if len(fields) >= 3 {
+// 			software := fields[1]
+// 			version := fields[2]
+
+// 			if strings.Contains(software, "Err?=(none)") || (strings.Contains(software, "Name")) {
+// 				logger.Log("Pulando "+software+":"+version, false)
+// 				continue
+// 			}
+// 			// newObject := map[string]string{
+// 			// 	"name":    software,
+// 			// 	"version": version,
+// 			// }
+
+// 			findings = append(findings, models.App{Name: software, Version: version})
+// 			fmt.Println(findings)
+// 		}
+// 	}
+
+// 	requestBody := models.Received{
+// 		Ip:       findIP(),
+// 		Ports:    findPorts(),
+// 		Hostname: findHostname(),
+// 		Os:       findOS(),
+// 		Apps:     findings,
+// 	}
+// 	postRequest("http://192.168.1.14:7654/NewReceived", requestBody)
+// }
 
 func findIP() string {
 	logger.Log("Buscando IP eth0 da maquina", false)
