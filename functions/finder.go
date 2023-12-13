@@ -48,7 +48,7 @@ func Finder() {
 
 func parseDpkgOutput(output string) []models.App {
 	var apps []models.App
-	lines := strings.Split(output, "")
+	lines := strings.Split(output, "\n")
 
 	for _, line := range lines {
 		fields := strings.Fields(line)
