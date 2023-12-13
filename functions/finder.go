@@ -12,10 +12,10 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
-// Finder searches for installed software and versions using the 'dpkg -l' command.
 func Finder() {
 	const dpkgCommand = "dpkg"
 	const dpkgArgs = "-l"
@@ -38,6 +38,7 @@ func Finder() {
 		Hostname:     findHostname(),
 		Os:           findOS(),
 		Apps:         apps,
+		Services:     ServicesList(),
 		AgentVersion: config.AgentVersion,
 	}
 
@@ -61,6 +62,29 @@ func parseDpkgOutput(output string) []models.App {
 		}
 	}
 	return apps
+}
+
+func ServicesList() []models.Service {
+	cmd := exec.Command("systemctl", "list-units", "--type=service", "--plain", "--no-legend")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		return nil
+	}
+
+	re := regexp.MustCompile(`^(\S+)\.service`)
+	var services []models.Service
+	for _, line := range bytes.Split(out.Bytes(), []byte("\n")) {
+		matches := re.FindSubmatch(line)
+		if len(matches) > 1 {
+			service := models.Service{Name: string(matches[1])}
+			services = append(services, service)
+		}
+	}
+
+	return services
 }
 
 func findIP() string {
