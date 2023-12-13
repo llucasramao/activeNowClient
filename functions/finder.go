@@ -30,9 +30,7 @@ func Finder() {
 		return
 	}
 
-	fmt.Println(1, cmd, output)
 	apps := parseDpkgOutput(string(output))
-	fmt.Println(2, apps)
 
 	requestBody := models.Received{
 		Ip:           findIP(),
@@ -62,7 +60,6 @@ func parseDpkgOutput(output string) []models.App {
 			apps = append(apps, models.App{Name: software, Version: version})
 		}
 	}
-	fmt.Println(3, apps)
 	return apps
 }
 
