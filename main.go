@@ -20,7 +20,7 @@ import (
 
 func main() {
 	if runtime.GOOS == "linux" {
-		Cron("15s")
+		Cron(config.CronTime)
 		listen()
 	} else {
 		logger.Log("Esse agente so pode ser utilizado em sistema linux!", true)
