@@ -88,30 +88,46 @@ func ServicesList() []models.Service {
 }
 
 func findIP() string {
-	logger.Log("Buscando IP eth0 da máquina", false)
-	iface, err := net.InterfaceByName("eth0")
+	interfaces, err := net.Interfaces()
 	if err != nil {
-		logger.Log(err.Error(), true)
 		return "nil"
 	}
 
-	addrs, err := iface.Addrs()
-	if err != nil {
-		logger.Log(err.Error(), true)
-		return "nil"
-	}
-
-	for _, addr := range addrs {
-		ip, _, err := net.ParseCIDR(addr.String())
-		if err != nil {
-			logger.Log(err.Error(), true)
-			continue
+	for _, iface := range interfaces {
+		if iface.Flags&net.FlagUp == 0 {
+			continue // interface down
 		}
-		if ipv4 := ip.To4(); ipv4 != nil {
-			return ipv4.String()
+		if iface.Flags&net.FlagLoopback != 0 {
+			continue // loopback interface
+		}
+
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return "nil"
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip = ip.To4()
+			if ip == nil {
+				continue // não é um endereço IPv4
+			}
+
+			return ip.String()
 		}
 	}
 	return "nil"
+
 }
 
 func findHostname() string {
